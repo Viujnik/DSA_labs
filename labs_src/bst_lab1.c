@@ -9,30 +9,30 @@ typedef struct bst_node {
     struct bst_node *right;
 } bst_node;
 
-void insert(bst_node **root, const int data) {
+int insert(bst_node **root, const int data) {
     if (*root == NULL) {
         bst_node *new_node = (bst_node *) malloc(sizeof(bst_node));
         if (new_node == NULL) {
             printf("Memory allocation failed\n");
-            return;
+            return 1;
         }
         new_node->data = data;
         new_node->left = NULL;
         new_node->right = NULL;
         *root = new_node;
-        return;
     }
     if (data < (*root)->data) {
         insert(&(*root)->left, data);
     } else if (data > (*root)->data) {
         insert(&(*root)->right, data);
     }
+    return 0;
 }
 
-void delete(bst_node **root, const int data) {
+int delete(bst_node **root, const int data) {
     if (*root == NULL) {
         printf("The tree is empty\n");
-        return;
+        return 1;
     }
     bst_node *temp = *root;
     if (data < (*root)->data) {
@@ -43,17 +43,17 @@ void delete(bst_node **root, const int data) {
         if ((*root)->left == NULL && (*root)->right == NULL) {
             *root = NULL;
             free(temp);
-            return;
+            return 0;
         }
         if ((*root)->left == NULL && (*root)->right != NULL) {
             *root = (*root)->right;
             free(temp);
-            return;
+            return 0;
         }
         if ((*root)->right == NULL && (*root)->left != NULL) {
             *root = (*root)->left;
             free(temp);
-            return;
+            return 0;
         }
         if ((*root)->left != NULL && (*root)->right != NULL) {
             const bst_node *curr = (*root)->right;
@@ -62,8 +62,10 @@ void delete(bst_node **root, const int data) {
             }
             (*root)->data = curr->data;
             delete(&(*root)->right, curr->data);
+            return 0;
         }
     }
+    return 0;
 }
 
 int isMirror(const bst_node *left, const bst_node *right) {
@@ -78,9 +80,9 @@ int isSymmetric(const bst_node *root) {
     return isMirror(root->left, root->right);
 }
 
-void print(const bst_node *root, int level) {
+int print(const bst_node *root, int level) {
     if (root == NULL) {
-        return;
+        return 1;
     }
     print(root->right, level + COUNT);
     for (int i = 0; i < level; i++) {
@@ -89,16 +91,18 @@ void print(const bst_node *root, int level) {
     printf("%d", root->data);
     printf("\n");
     print(root->left, level + COUNT);
+    return 0;
 }
 
-void clean(bst_node **root) {
+int clean(bst_node **root) {
     if (*root == NULL) {
-        return;
+        return 1;
     }
     clean(&(*root)->left);
     clean(&(*root)->right);
     free(*root);
     *root = NULL;
+    return 0;
 }
 
 void cli_cute(bst_node **root, char *tokens[], int token_cnt) {

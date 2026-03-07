@@ -3,4 +3,5 @@ project(DSA_labs)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(DSA_labs labs_src/bst_lab1.c)
+add_executable(DSA_labs labs_src/sorting_lab2.c
+)
