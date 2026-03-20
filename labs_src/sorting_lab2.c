@@ -38,12 +38,13 @@ int str_sorting(char words[100][64], const int n) {
     return 0;
 }
 
-int bin_search(char words[100][64], const int n, const char target[64]) {
-    int left = 0, right = n - 1;
+int bin_search(const char words[100][64], const int n, const char target[64]) {
+    int left = 0, right = n - 1, cmp_res;
     while (left <= right) {
         const int mid = left + (right - left) / 2;
-        if (strcmp(words[mid], target) == 0) { return mid; }
-        if (strcmp(words[mid], target) < 0) { left = mid + 1; }
+        cmp_res = strcmp(words[mid], target);
+        if (cmp_res == 0) { return mid; }
+        if (cmp_res < 0) { left = mid + 1; }
         else { right = mid - 1; }
     }
     return -1;
