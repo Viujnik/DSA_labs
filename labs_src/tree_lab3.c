@@ -100,6 +100,14 @@ TreeNode *create_tree_node(const char *val) {
     return node;
 }
 
+void free_tree_node(TreeNode *node) {
+    if (node == NULL) return;
+    free_tree_node(node->left);
+    free_tree_node(node->right);
+    free(node->value);
+    free(node);
+}
+
 
 char *get_string(const char *src, size_t *start, size_t size) {
     while (*start < size && isspace((unsigned char) src[*start])) {
@@ -213,6 +221,42 @@ int build_tree(TreeNode **root, char **src, size_t size) {
     return 1;
 }
 
+int zero_filter(TreeNode **root) {
+    if (root == NULL || *root == NULL) return -1;
+    zero_filter(&((*root)->left));
+    zero_filter(&((*root)->right));
+
+    TreeNode *node = *root;
+    if ((*root)->left != NULL && (*root)->right != NULL) {
+        int left_is_zero = (strcmp(node->left->value, "0") == 0);
+        int right_is_zero = (strcmp(node->right->value, "0") == 0);
+        if (strcmp((*root)->value, "*") == 0 && (left_is_zero || right_is_zero)) {
+            free_tree_node((*root)->left);
+            free_tree_node((*root)->right);
+            (*root)->left = NULL;
+            (*root)->right = NULL;
+            free((*root)->value);
+            (*root)->value = strdup("0");
+        } else if (strcmp(node->value, "+") == 0) {
+            if (left_is_zero) {
+                TreeNode *temp = (*root)->right;
+                free(node->left->value);
+                free(node->left);
+                free(node->value);
+                free(node);
+                *root = temp;
+            } else if (right_is_zero) {
+                TreeNode *temp = (*root)->left;
+                free(node->right->value);
+                free(node->right);
+                free(node->value);
+                free(node);
+                *root = temp;
+            }
+        }
+    }
+    return 1;
+}
 
 int main() {
     TreeNode *root = NULL;
@@ -234,7 +278,11 @@ int main() {
     build_tree(&root, expr, dst_size);
 
     printf("\n");
+
+    zero_filter(&root);
+
     print_tree(root, 0);
+
     for (int i = 0; i < dst_size; i++) {
         free(expr[i]);
     }
@@ -242,3 +290,5 @@ int main() {
     free(expr);
     return 0;
 }
+
+// 2 * (2 + 3) + (0 * (4 + 5)) + (6 + 0)
