@@ -10,6 +10,27 @@ typedef struct TreeNode {
     struct TreeNode *right;
 } TreeNode;
 
+
+
+TreeNode *create_tree_node(const char *val) {
+    TreeNode *node = malloc(sizeof(TreeNode));
+    if (!node) return NULL;
+    node->value = strdup(val);
+    if (node->value == NULL) {
+        return NULL;
+    }
+    node->left = node->right = NULL;
+    return node;
+}
+
+void free_tree_node(TreeNode *node) {
+    if (node == NULL) return;
+    free_tree_node(node->left);
+    free_tree_node(node->right);
+    free(node->value);
+    free(node);
+}
+
 void print_tree(const TreeNode *root, int level) {
     if (root == NULL) {
         return;
@@ -92,22 +113,6 @@ TreeNode *pop_node(NodeStack **top) {
     return res;
 }
 
-TreeNode *create_tree_node(const char *val) {
-    TreeNode *node = malloc(sizeof(TreeNode));
-    if (!node) return NULL;
-    node->value = strdup(val);
-    node->left = node->right = NULL;
-    return node;
-}
-
-void free_tree_node(TreeNode *node) {
-    if (node == NULL) return;
-    free_tree_node(node->left);
-    free_tree_node(node->right);
-    free(node->value);
-    free(node);
-}
-
 
 char *get_string(const char *src, size_t *start, size_t size) {
     while (*start < size && isspace((unsigned char) src[*start])) {
@@ -119,7 +124,7 @@ char *get_string(const char *src, size_t *start, size_t size) {
     if (result == NULL) return NULL;
     size_t res_size = 0;
     if (isdigit(src[*start])) {
-        while (*start < size && isdigit((unsigned char) src[*start])) {
+        while (*start < size && isdigit(src[*start])) {
             if (res_size + 2 > capacity) {
                 capacity *= 2;
                 char *buf = (char *) realloc(result, capacity * sizeof(char));
@@ -203,7 +208,7 @@ int poliz(char **dst, const char *src, size_t n) {
 
 
 int build_tree(TreeNode **root, char **src, size_t size) {
-    if (src == NULL) return -1;
+    if (src == NULL || *src == NULL) return -1;
     NodeStack *stack = NULL;
     for (int i = 0; i < size; i++) {
         TreeNode *new_node = create_tree_node(src[i]);
@@ -227,42 +232,41 @@ int zero_filter(TreeNode **root) {
     zero_filter(&((*root)->right));
 
     TreeNode *node = *root;
-    if ((*root)->left != NULL && (*root)->right != NULL) {
-        int left_is_zero = (strcmp(node->left->value, "0") == 0);
-        int right_is_zero = (strcmp(node->right->value, "0") == 0);
-        if (strcmp((*root)->value, "*") == 0 && (left_is_zero || right_is_zero)) {
-            free_tree_node((*root)->left);
-            free_tree_node((*root)->right);
-            (*root)->left = NULL;
-            (*root)->right = NULL;
-            free((*root)->value);
-            (*root)->value = strdup("0");
-        } else if (strcmp(node->value, "+") == 0) {
-            if (left_is_zero) {
-                TreeNode *temp = (*root)->right;
-                free(node->left->value);
-                free(node->left);
-                free(node->value);
-                free(node);
-                *root = temp;
-            } else if (right_is_zero) {
-                TreeNode *temp = (*root)->left;
-                free(node->right->value);
-                free(node->right);
-                free(node->value);
-                free(node);
-                *root = temp;
-            }
+    if ((*root)->left == NULL && (*root)->right == NULL) return -1;
+
+    int left_is_zero = (strcmp(node->left->value, "0") == 0);
+    int right_is_zero = (strcmp(node->right->value, "0") == 0);
+    if (strcmp(node->value, "*") == 0 && (left_is_zero || right_is_zero)) {
+        free_tree_node(node->left);
+        free_tree_node(node->right);
+        node->left = NULL;
+        node->right = NULL;
+        free(node->value);
+        node->value = strdup("0");
+    } else if (strcmp(node->value, "+") == 0) {
+        if (left_is_zero) {
+            TreeNode *temp = node->right;
+            free(node->left->value);
+            free(node->left);
+            free(node->value);
+            free(node);
+            *root = temp;
+        } else if (right_is_zero) {
+            TreeNode *temp = node->left;
+            free(node->right->value);
+            free(node->right);
+            free(node->value);
+            free(node);
+            *root = temp;
         }
     }
-    return 1;
+    return 0;
 }
 
 int main() {
     TreeNode *root = NULL;
     char *buf = (char *) malloc(1024);
     if (buf == NULL) {
-        free(buf);
         return -1;
     }
     fgets(buf, 1024, stdin);
@@ -270,7 +274,6 @@ int main() {
     char **expr = (char **) malloc(1024 * sizeof(char *));
     if (expr == NULL) {
         free(buf);
-        free(expr);
         return -1;
     }
     int dst_size = poliz(expr, buf, strlen(buf));
@@ -292,3 +295,4 @@ int main() {
 }
 
 // 2 * (2 + 3) + (0 * (4 + 5)) + (6 + 0)
+// пошитые деревья
