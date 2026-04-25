@@ -355,6 +355,15 @@ void print(Node *root, int level) {
     }
 }
 
+void clear(Node **root) {
+    if (*root == NULL) return;
+    for (int i = 0; i <= (*root)->keys_cnt; ++i) {
+        clear(&(*root)->children[i]);
+        free((*root)->children[i]);
+    }
+    free(*root);
+    *root = NULL;
+}
 
 int main() {
     BTree tree = {NULL};
@@ -375,7 +384,6 @@ int main() {
 
         switch (op) {
             case 1:
-                // Используем %63s, чтобы не выйти за пределы key[64]
                 if (sscanf(line, "%d %63s %lf", &op, key, &val) == 3) {
                     printf(">>> Операция 1: Вставка [%s] со значением %.2f\n", key, val);
                     insert_node(&(tree.root), key, val);
@@ -408,10 +416,14 @@ int main() {
                 }
                 printf("--------------------------------\n\n");
                 break;
+            default:
+                printf("Что ты такое ввёл?");
         }
     }
 
     fclose(file);
+    clear(&tree.root);
+
     printf("Работа с командами завершена.\n");
     return 0;
 }

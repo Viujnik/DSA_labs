@@ -3,4 +3,4 @@ project(DSA_labs)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(DSA_labs labs_src/btree_lab4.c)
+add_executable(DSA_labs labs_src/graph_lab5.c)
